@@ -40,6 +40,10 @@ end
 
 -- Create new terminal
 function M.new_terminal()
+    if state.last_id ~= 0 and vim.api.nvim_win_is_valid(state.terminals[state.last_id].win) then
+	vim.api.nvim_win_hide(state.terminals[state.last_id].win)
+    end
+
     state.last_id = state.last_id + 1
     local id = state.last_id
 
@@ -54,13 +58,21 @@ function M.new_terminal()
 end
 
 -- Toggle terminal
-function M.toggle_terminal(id)
+function M.toggle_terminal(id, from_ui)
+    if not from_ui then from_ui = false end
     if not id then id = state.current_id or state.last_id end
     local term = state.terminals[id]
 
     if not term then
 	term = M.new_terminal()
-    elseif not vim.api.nvim_win_is_valid(term.win) then
+    elseif vim.api.nvim_win_is_valid(term.win) and id == state.current_id and not from_ui then
+	vim.api.nvim_win_hide(term.win)
+    elseif vim.api.nvim_win_is_valid(term.win) and id == state.current_id and from_ui then
+    else
+	if vim.api.nvim_win_is_valid(state.terminals[state.current_id].win) then
+	    vim.api.nvim_win_hide(state.terminals[state.current_id].win)
+	end
+
 	term = create_floating_window {
 	    buf = term.buf,
 	    title = " Terminal " .. id .. " "
@@ -68,8 +80,8 @@ function M.toggle_terminal(id)
 	state.terminals[id].win = term.win
 	state.current_id = id
 	vim.cmd("startinsert")
-    else
-	vim.api.nvim_win_close(term.win, true)
+
+	-- vim.api.nvim_win_close(term.win, true)
     end
 end
 
@@ -101,7 +113,7 @@ function M.select_terminal()
     vim.ui.select(items, { prompt = "Select terminal:" }, function(choice)
 	if choice then
 	    local id = tonumber(choice:match("%d+"))
-	    M.toggle_terminal(id)
+	    M.toggle_terminal(id, true)
 	end
     end)
 end
