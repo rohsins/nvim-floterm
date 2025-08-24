@@ -24,16 +24,16 @@ Using **lazy.nvim**:
 ## Usage
 ### Commands
 - :FlotermNew → create new terminal
-    - :FlotermToggle [id] → toggle terminal (last if no ID)
-    - :FlotermSelect → pick terminal from menu
-    - :FlotermNext → cycle to next terminal
-    - :FlotermPrev → cycle to prev terminal
+- :FlotermToggle [id] → toggle terminal (last if no ID)
+- :FlotermSelect → pick terminal from menu
+- :FlotermNext → cycle to next terminal
+- :FlotermPrev → cycle to prev terminal
 
 ## Default Keymaps
 - <leader>tn → new terminal
-- <leader>tt → toggle last terminal
+- <leader>tt → Hide/Unhide terminal
 - <leader>ts → select terminal
-- <leader>tnext → next terminal
-- <leader>tprev → previous terminal
+- <leader>th → previous terminal
+- <leader>tl → next terminal
 - <esc><esc> (in terminal mode) → exit to normal mode
 
