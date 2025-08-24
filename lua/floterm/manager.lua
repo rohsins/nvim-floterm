@@ -1,12 +1,11 @@
 local M = {}
 
 local state = {
-    terminals = {},   -- { [id] = {buf, win, id} }
+    terminals = {},
     last_id = 0,
     current_id = nil,
 }
 
--- Create floating window
 local function create_floating_window(opts)
     opts = opts or {}
     local width = opts.width or math.floor(vim.o.columns * 0.8)
@@ -38,7 +37,6 @@ local function create_floating_window(opts)
     return { buf = buf, win = win }
 end
 
--- Create new terminal
 function M.new_terminal()
     if state.last_id ~= 0 and vim.api.nvim_win_is_valid(state.terminals[state.last_id].win) then
 	vim.api.nvim_win_hide(state.terminals[state.last_id].win)
@@ -57,11 +55,20 @@ function M.new_terminal()
     return term
 end
 
--- Toggle terminal
 function M.toggle_terminal(id, from_ui)
     if not from_ui then from_ui = false end
     if not id then id = state.current_id or state.last_id end
     local term = state.terminals[id]
+
+    if term and not vim.api.nvim_buf_is_valid(term.buf) then
+	id = M.list_terminals()[1]
+	term = state.terminals[id]
+
+	if id == nil then
+	    state.current_id = nil
+	    state.last_id = 0
+	end
+    end
 
     if not term then
 	term = M.new_terminal()
@@ -80,12 +87,9 @@ function M.toggle_terminal(id, from_ui)
 	state.terminals[id].win = term.win
 	state.current_id = id
 	vim.cmd("startinsert")
-
-	-- vim.api.nvim_win_close(term.win, true)
     end
 end
 
--- List valid terminals
 function M.list_terminals()
     local ids = {}
     for id, term in pairs(state.terminals) do
@@ -97,7 +101,6 @@ function M.list_terminals()
     return ids
 end
 
--- Select terminal with vim.ui.select
 function M.select_terminal()
     local ids = M.list_terminals()
     if #ids == 0 then
@@ -118,7 +121,6 @@ function M.select_terminal()
     end)
 end
 
--- Cycle next terminal
 function M.next_terminal()
     local ids = M.list_terminals()
     if #ids == 0 then
@@ -130,7 +132,6 @@ function M.next_terminal()
     M.toggle_terminal(ids[next_idx])
 end
 
--- Cycle prev terminal
 function M.prev_terminal()
     local ids = M.list_terminals()
     if #ids == 0 then
@@ -142,7 +143,6 @@ function M.prev_terminal()
     M.toggle_terminal(ids[prev_idx])
 end
 
--- Statusline/tabline component with highlights
 function M.statusline()
     local ids = M.list_terminals()
     if #ids == 0 then
